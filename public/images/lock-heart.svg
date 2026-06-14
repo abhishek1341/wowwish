@@ -1,0 +1,27 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="g" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(120 70) rotate(90) scale(170)">
+      <stop stop-color="#FFE4E6"/>
+      <stop offset="0.55" stop-color="#FB7185"/>
+      <stop offset="1" stop-color="#BE123C"/>
+    </radialGradient>
+    <filter id="glow" x="-40" y="-40" width="320" height="320" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.55 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#glow)">
+    <path d="M120 206C120 206 49 164 49 104.5C49 76.7 67.4 57 94.5 57C107.7 57 117.9 62.3 120 66.2C122.1 62.3 132.3 57 145.5 57C172.6 57 191 76.7 191 104.5C191 164 120 206 120 206Z" fill="url(#g)"/>
+    <path d="M120 206C120 206 49 164 49 104.5C49 76.7 67.4 57 94.5 57C107.7 57 117.9 62.3 120 66.2C122.1 62.3 132.3 57 145.5 57C172.6 57 191 76.7 191 104.5C191 164 120 206 120 206Z" stroke="#FFF1F2" stroke-width="3"/>
+
+    <rect x="84" y="106" width="72" height="64" rx="18" fill="rgba(255,255,255,0.18)" stroke="rgba(255,241,242,0.55)"/>
+    <path d="M102 106V92C102 80.4 111.4 71 123 71C134.6 71 144 80.4 144 92V106" stroke="rgba(255,241,242,0.9)" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="120" cy="140" r="6" fill="#FFF1F2"/>
+    <path d="M120 146V156" stroke="#FFF1F2" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

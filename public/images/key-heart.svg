@@ -1,0 +1,28 @@
+<svg width="260" height="200" viewBox="0 0 260 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="k" x1="40" y1="30" x2="220" y2="170" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF1F2"/>
+      <stop offset="0.55" stop-color="#FDA4AF"/>
+      <stop offset="1" stop-color="#E11D48"/>
+    </linearGradient>
+    <filter id="glow" x="-40" y="-40" width="340" height="280" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.45 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#glow)">
+    <path d="M78 46C78 26.1 94.1 10 114 10C133.9 10 150 26.1 150 46C150 65.9 133.9 82 114 82C94.1 82 78 65.9 78 46Z" fill="rgba(255,255,255,0.18)" stroke="rgba(255,241,242,0.75)" stroke-width="4"/>
+    <circle cx="114" cy="46" r="18" fill="rgba(255,255,255,0.14)" stroke="rgba(255,241,242,0.65)"/>
+
+    <path d="M127 70L234 177" stroke="url(#k)" stroke-width="14" stroke-linecap="round"/>
+    <path d="M206 149L190 165" stroke="rgba(255,241,242,0.9)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M223 166L207 182" stroke="rgba(255,241,242,0.9)" stroke-width="10" stroke-linecap="round"/>
+
+    <path d="M45 118C45 107 54.5 98 66.1 98C71.7 98 76 100.2 77 101.9C78 100.2 82.3 98 87.9 98C99.5 98 109 107 109 118C109 143.8 77 163 77 163C77 163 45 143.8 45 118Z" fill="url(#k)" stroke="rgba(255,241,242,0.8)" stroke-width="3"/>
+  </g>
+</svg>
