@@ -23,7 +23,8 @@
     "capture:hero-videos": "node scripts/capture-hero-videos.js",
     "check:legacy-demos": "node scripts/check-legacy-demo-routes.js",
     "lint": "next lint --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate:og-images": "node scripts/generate-og-images.mjs"
   },
   "browserslist": {
     "production": [
@@ -40,6 +41,7 @@
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
-    "playwright": "^1.60.0"
+    "playwright": "^1.60.0",
+    "sharp": "^0.35.2"
   }
 }

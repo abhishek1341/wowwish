@@ -1,13 +1,56 @@
 import "./globals.css";
 import Script from "next/script";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata = createPageMetadata({
-  title: "WowWish — Personalized Wish Pages From ₹999",
-  description: "Personalized wish pages with photos, music, and a private link. From ₹999.",
-  path: "/",
-});
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_TITLE,
+  SITE_URL,
+} from "@/lib/metadata";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    template: "%s | WowWish",
+    default: DEFAULT_TITLE,
+  },
+  description: DEFAULT_DESCRIPTION,
+  icons: {
+    icon: [
+      { url: "/favicon_io/favicon.ico" },
+      { url: "/favicon_io/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon_io/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/favicon_io/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/favicon_io/site.webmanifest",
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: "website",
+    siteName: "WowWish",
+    url: SITE_URL,
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "WowWish",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+};
 
 export default function RootLayout({
   children,

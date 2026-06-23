@@ -1183,9 +1183,16 @@ const MukeshSonal30thAnniversaryPage = () => {
       setMusicBlocked(false);
       setMusicNeedsUnmute(false);
     } catch {
-      setMusicBlocked(true);
-      setMusicNeedsUnmute(true);
-      audio.muted = true;
+      try {
+        audio.muted = true;
+        await audio.play();
+        setMusicBlocked(false);
+        setMusicNeedsUnmute(true);
+      } catch {
+        setMusicBlocked(true);
+        setMusicNeedsUnmute(false);
+        setMusicOn(false);
+      }
     }
   };
 
@@ -1254,44 +1261,8 @@ const MukeshSonal30thAnniversaryPage = () => {
     fadeVolumeTo(letterOpen ? MUSIC_VOLUME_LETTER : MUSIC_VOLUME);
   }, [letterOpen, musicOn]);
 
-  useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-    const onFirstUserGesture = async () => {
-      try {
-        audio.muted = false;
-        await audio.play();
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(true);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true, passive: true });
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
   const handleTuneButton = () => {
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort();
-      fadeVolumeTo(letterOpen ? MUSIC_VOLUME_LETTER : MUSIC_VOLUME);
-      return;
-    }
-
-    if (musicBlocked || musicNeedsUnmute || !isPlaying) {
-      void attemptPlayBestEffort();
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
   const triggerBurst = () => {

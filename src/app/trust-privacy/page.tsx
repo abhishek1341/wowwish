@@ -1,12 +1,13 @@
 import Link from "next/link";
 
 import MarketingShell from "@/components/site/MarketingShell";
-import { createPageMetadata } from "@/lib/metadata";
+import { createPageMetadata, OG_IMAGES } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
   title: "Trust & Privacy | WowWish",
   description: "Learn how WowWish keeps your photos, messages, and personalized wish pages private.",
   path: "/trust-privacy",
+  ogImage: OG_IMAGES.default,
 });
 
 export default function TrustPrivacyPage() {

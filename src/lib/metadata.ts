@@ -2,64 +2,83 @@ import type { Metadata } from "next";
 
 import { BRAND_NAME } from "@/components/site/siteConstants";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://wowwish.co.in";
-const BRAND_IMAGE_PATH = "/images/wowwish-logo.png";
+export const SITE_URL = "https://wowwish.in";
+export const DEFAULT_OG_IMAGE = "/og/default.png";
+export const DEFAULT_TITLE = "WowWish — Personalized Wish Pages From ₹999";
+export const DEFAULT_DESCRIPTION =
+  "Personalized wish pages with photos, music, and a private link. From ₹999.";
 
 type PageMetadataInput = {
   title: string;
   description: string;
   path?: string;
+  /** Route-specific OG image under /public/og (e.g. /og/proposal.png). */
+  ogImage?: string;
+  ogImageAlt?: string;
 };
 
-function absoluteUrl(path: string) {
-  return new URL(path, SITE_URL).toString();
+function normalizePageTitle(title: string) {
+  return title.replace(/\s*\|\s*WowWish\s*$/i, "").trim();
 }
+
+function ogImageMeta(imagePath: string, alt: string) {
+  return [
+    {
+      url: imagePath,
+      width: 1200,
+      height: 630,
+      alt,
+    },
+  ] as const;
+}
+
+/** Route-specific OG images under /public/og (1200×630 PNG). */
+export const OG_IMAGES = {
+  default: DEFAULT_OG_IMAGE,
+  proposal: "/og/proposal.png",
+  proposalLuxury: "/og/proposal-luxury.png",
+  proposalCute: "/og/proposal-cute.png",
+  anniversary: "/og/anniversary.png",
+  anniversaryCute: "/og/anniversary-cute.png",
+  anniversaryElegant: "/og/anniversary-elegant.png",
+  birthday: "/og/birthday.png",
+  birthdayBestie: "/og/birthday-bestie.png",
+  birthdayYaari: "/og/birthday-yaari.png",
+  mukeshSonal30th: "/og/mukesh-sonal-30th-anniversary.png",
+} as const;
 
 export function createPageMetadata({
   title,
   description,
   path = "/",
+  ogImage = DEFAULT_OG_IMAGE,
+  ogImageAlt,
 }: PageMetadataInput): Metadata {
+  const pageTitle = normalizePageTitle(title);
   const canonicalPath = path.startsWith("/") ? path : `/${path}`;
-  const canonicalUrl = absoluteUrl(canonicalPath);
-  const brandImageUrl = absoluteUrl(BRAND_IMAGE_PATH);
+  const canonicalUrl = new URL(canonicalPath, SITE_URL).toString();
+  const fullTitle = `${pageTitle} | ${BRAND_NAME}`;
+  const imageAlt = ogImageAlt ?? `${pageTitle} — ${BRAND_NAME}`;
 
   return {
-    metadataBase: new URL(SITE_URL),
-    title,
+    title: pageTitle,
     description,
-    icons: {
-      icon: [
-        { url: "/favicon_io/favicon.ico" },
-        { url: "/favicon_io/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-        { url: "/favicon_io/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      ],
-      apple: [{ url: "/favicon_io/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    },
-    manifest: "/favicon_io/site.webmanifest",
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-      siteName: BRAND_NAME,
       type: "website",
-      images: [
-        {
-          url: brandImageUrl,
-          width: 1024,
-          height: 1024,
-          alt: `${BRAND_NAME} personalized wish pages`,
-        },
-      ],
+      siteName: BRAND_NAME,
+      url: canonicalUrl,
+      title: fullTitle,
+      description,
+      images: [...ogImageMeta(ogImage, imageAlt)],
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: fullTitle,
       description,
-      images: [brandImageUrl],
+      images: [ogImage],
     },
   };
 }

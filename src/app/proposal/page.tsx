@@ -5,7 +5,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import {
+  LetterArrivalHighlight,
+  PROPOSAL_LETTER_SECTION_ID,
+  ScrollCTA,
+  useLetterScrollArrival,
+} from "@/components/wowwish/treatments";
 import { RevealHeading, cardFadeUp } from "@/components/wowwish/scrollReveal";
+import { scrollToSection } from "@/lib/scrollToSection";
 import photo1 from "./1.png";
 import photo2 from "./2.jpeg";
 import photo3 from "./3.jpeg";
@@ -535,14 +542,16 @@ function SectionShell({
   eyebrow,
   title,
   children,
+  sectionClassName,
 }: {
   id: string;
   eyebrow: string;
   title: string;
   children: ReactNode;
+  sectionClassName?: string;
 }) {
   return (
-    <section id={id} className="relative z-10 scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14">
+    <section id={id} className={cn("relative z-10 px-4 py-10 sm:px-6 sm:py-14", sectionClassName ?? "scroll-mt-20")}>
       <div className="mx-auto w-full max-w-5xl">
         <motion.div
           initial={{ y: 14 }}
@@ -589,6 +598,7 @@ export default function ProposalPage() {
   const [letterOpen, setLetterOpen] = useState(false);
   const [pauseExiting, setPauseExiting] = useState(false);
   const [proposalReady, setProposalReady] = useState(false);
+  const { highlightActive: letterHighlight, scrollToLetter } = useLetterScrollArrival();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeFadeRef = useRef<number | null>(null);
@@ -608,19 +618,20 @@ export default function ProposalPage() {
     }
 
     try {
-      audio.muted = true;
+      audio.muted = false;
       await audio.play();
       setMusicBlocked(false);
-      setMusicNeedsUnmute(true);
+      setMusicNeedsUnmute(false);
     } catch {
       try {
-        audio.muted = false;
+        audio.muted = true;
         await audio.play();
         setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
+        setMusicNeedsUnmute(true);
       } catch {
         setMusicBlocked(true);
         setMusicNeedsUnmute(false);
+        setMusicOn(false);
       }
     }
   };
@@ -668,12 +679,6 @@ export default function ProposalPage() {
   }, []);
 
   useEffect(() => {
-    if (!musicOn) return;
-    void attemptPlayBestEffort(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (!audioRef.current) return;
     const audio = audioRef.current;
 
@@ -693,48 +698,6 @@ export default function ProposalPage() {
   }, []);
 
   useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-
-    const onFirstUserGesture = async () => {
-      try {
-        if (audio.paused) {
-          audio.muted = false;
-          await audio.play();
-        } else {
-          audio.muted = false;
-        }
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true });
-    window.addEventListener("wheel", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("scroll", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener(
-      "touchstart",
-      onFirstUserGesture,
-      { once: true, passive: true } as AddEventListenerOptions,
-    );
-    window.addEventListener("touchmove", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("wheel", onFirstUserGesture);
-      window.removeEventListener("scroll", onFirstUserGesture);
-      window.removeEventListener("touchstart", onFirstUserGesture);
-      window.removeEventListener("touchmove", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
-  useEffect(() => {
     return () => {
       if (volumeFadeRef.current) {
         window.clearInterval(volumeFadeRef.current);
@@ -743,7 +706,7 @@ export default function ProposalPage() {
   }, []);
 
   function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToSection(id);
   }
 
   function triggerSpark() {
@@ -758,19 +721,7 @@ export default function ProposalPage() {
 
   const handleTuneButton = () => {
     triggerSpark();
-
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort(true);
-      return;
-    }
-
-    if (musicBlocked || musicNeedsUnmute || !isPlaying) {
-      void attemptPlayBestEffort(true);
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
   function fadeMusicVolume(targetVolume: number) {
@@ -814,7 +765,7 @@ export default function ProposalPage() {
       <GlowSparks active={sparkOn} />
       <SoftConfetti active={confettiOn} />
 
-      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" autoPlay muted playsInline />
+      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" playsInline />
 
       <motion.button
         type="button"
@@ -881,28 +832,20 @@ export default function ProposalPage() {
                   type="button"
                   onClick={() => {
                     triggerSpark();
-                    if (!musicOn) {
-                      setMusicOn(true);
-                      void attemptPlayBestEffort(true);
-                    }
-                    setLetterOpen(true);
-                    scrollTo("letter");
+                    scrollToLetter(() => setLetterOpen(true));
                   }}
                   className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black shadow-[0_18px_60px_rgba(244,114,182,0.14)] transition hover:bg-white/90"
                 >
                   {templateData.hero.cta}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerSpark();
-                    scrollTo("proposal");
-                  }}
+                <ScrollCTA
+                  scrollTargetId="take-a-breath"
+                  onScroll={triggerSpark}
                   className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
                 >
                   The question
-                </button>
+                </ScrollCTA>
               </div>
 
               <motion.button
@@ -1120,8 +1063,14 @@ export default function ProposalPage() {
         reverse
       />
 
-      <SectionShell id="letter" eyebrow=" " title={templateData.letter.title}>
-        <GlassCard className="relative overflow-hidden bg-[linear-gradient(145deg,rgba(255,247,237,0.12),rgba(255,255,255,0.055))]">
+      <SectionShell
+        id={PROPOSAL_LETTER_SECTION_ID}
+        eyebrow=" "
+        title={templateData.letter.title}
+        sectionClassName="scroll-mt-24"
+      >
+        <LetterArrivalHighlight active={letterHighlight}>
+          <GlassCard className="relative overflow-hidden bg-[linear-gradient(145deg,rgba(255,247,237,0.12),rgba(255,255,255,0.055))]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(244,114,182,0.18),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_20%,rgba(251,191,36,0.14),transparent_55%)]" />
           <div className="pointer-events-none absolute -bottom-20 left-1/2 h-52 w-52 -translate-x-1/2 rounded-full bg-rose-200/10 blur-3xl" />
@@ -1184,6 +1133,7 @@ export default function ProposalPage() {
             )}
           </div>
         </GlassCard>
+        </LetterArrivalHighlight>
       </SectionShell>
 
       <PhotoInterlude
@@ -1194,8 +1144,8 @@ export default function ProposalPage() {
       />
 
       <motion.section
-        id="pause-before-ask"
-        className="relative z-10 flex min-h-screen items-center justify-center overflow-hidden bg-[#1A1A2E] px-4 py-20 text-center sm:px-6"
+        id="take-a-breath"
+        className="relative z-10 scroll-mt-24 flex min-h-screen items-center justify-center overflow-hidden bg-[#1A1A2E] px-4 py-20 text-center sm:px-6"
         initial={{ opacity: 0, scale: 0.985, filter: "blur(10px)" }}
         whileInView={pauseExiting ? undefined : { opacity: 1, scale: 1, filter: "blur(0px)" }}
         animate={pauseExiting ? { opacity: 0, scale: 0.985, filter: "blur(10px)" } : undefined}
@@ -1404,23 +1354,19 @@ export default function ProposalPage() {
                 type="button"
                 onClick={() => {
                   triggerSpark();
-                  setLetterOpen(true);
-                  scrollTo("letter");
+                  scrollToLetter(() => setLetterOpen(true));
                 }}
                 className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5 hover:bg-white/90"
               >
                 {templateData.finale.primaryCta}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerSpark();
-                  scrollTo("hero");
-                }}
+              <ScrollCTA
+                scrollTargetId="hero"
+                onScroll={triggerSpark}
                 className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white/90 transition hover:-translate-y-0.5 hover:bg-white/10"
               >
                 {templateData.finale.secondaryCta}
-              </button>
+              </ScrollCTA>
             </div>
           </GlassCard>
 

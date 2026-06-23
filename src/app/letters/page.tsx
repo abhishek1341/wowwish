@@ -1,12 +1,13 @@
 import LettersGrid from "@/components/LettersGrid";
 import RomanticBackground from "@/components/RomanticBackground";
 import PageTransition from "@/components/PageTransition";
-import { createPageMetadata } from "@/lib/metadata";
+import { createPageMetadata, OG_IMAGES } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
   title: "Love Letters | WowWish",
   description: "Open sweet personalized letters made for thoughtful romantic surprises.",
   path: "/letters",
+  ogImage: OG_IMAGES.default,
 });
 
 export default function LettersPage() {

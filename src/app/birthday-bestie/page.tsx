@@ -5,7 +5,9 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image, { type StaticImageData } from "next/image";
 
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import { StatusChip } from "@/components/wowwish/treatments";
 import { RevealHeading, cardFadeUp } from "@/components/wowwish/scrollReveal";
+import { Heart } from "lucide-react";
 import bestieGlow from "./bestie_glow_moment.png";
 import cakePhoto from "./Birthday_cake_for_bestie.jpeg";
 import laughMemory from "./laugh_always_remember.png";
@@ -123,50 +125,36 @@ function cn(...classes: Array<string | false | null | undefined>) {
 function useBirthdayMusic(src: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [musicOn, setMusicOn] = useState(true);
-  const triedAutoplay = useRef(false);
 
-  const play = () => {
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = 0.16;
-    void audio
-      .play()
-      .then(() => setMusicOn(true))
-      .catch(() => setMusicOn(false));
-  };
 
-  const pause = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    if (musicOn) {
+      audio.volume = 0.16;
+      void (async () => {
+        try {
+          audio.muted = false;
+          await audio.play();
+        } catch {
+          try {
+            audio.muted = true;
+            await audio.play();
+          } catch {
+            setMusicOn(false);
+          }
+        }
+      })();
+      return;
+    }
+
     audio.pause();
-    setMusicOn(false);
-  };
-
-  useEffect(() => {
-    if (triedAutoplay.current) return;
-    triedAutoplay.current = true;
-    play();
-  }, []);
-
-  useEffect(() => {
-    const startOnInteraction = () => {
-      if (!audioRef.current || !audioRef.current.paused) return;
-      play();
-    };
-
-    window.addEventListener("pointerdown", startOnInteraction, { once: true });
-    window.addEventListener("keydown", startOnInteraction, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", startOnInteraction);
-      window.removeEventListener("keydown", startOnInteraction);
-    };
-  }, []);
+  }, [musicOn]);
 
   return {
-    audio: <audio ref={audioRef} src={src} preload="none" loop />,
+    audio: <audio ref={audioRef} src={src} preload="none" loop playsInline />,
     musicOn,
-    toggleMusic: () => (musicOn ? pause() : play()),
+    toggleMusic: () => setMusicOn((value) => !value),
   };
 }
 
@@ -608,9 +596,13 @@ export default function BirthdayBestiePage() {
             <motion.button type="button" onClick={replay} whileTap={{ scale: 0.98 }} className="rounded-2xl bg-[#3B0B2E] px-6 py-4 text-sm font-black text-white">
               {data.finale.replay}
             </motion.button>
-            <motion.button type="button" onClick={triggerBurst} whileTap={{ scale: 0.98 }} className="rounded-2xl border border-[#F9A8D4]/55 bg-white/70 px-6 py-4 text-sm font-black text-[#BE185D]">
+            <StatusChip
+              icon={Heart}
+              iconPosition="end"
+              className="rounded-2xl bg-[#FFF1F6] px-6 py-4 text-sm font-black text-[#BE185D] text-center flex items-center justify-center"
+            >
               {data.finale.hug}
-            </motion.button>
+            </StatusChip>
           </div>
         </div>
       </section>

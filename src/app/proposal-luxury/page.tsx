@@ -5,7 +5,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import {
+  LetterArrivalHighlight,
+  PROPOSAL_LETTER_SECTION_ID,
+  useLetterScrollArrival,
+} from "@/components/wowwish/treatments";
 import { RevealHeading, cardFadeUp, borderDraw } from "@/components/wowwish/scrollReveal";
+import { scrollToSection } from "@/lib/scrollToSection";
 import photo1 from "./1.png";
 import photo2 from "./2.png";
 import photo3 from "./3.png";
@@ -444,16 +450,18 @@ function SectionShell({
   eyebrow,
   title,
   children,
+  sectionClassName,
 }: {
   id: string;
   eyebrow: string;
   title: string;
   children: ReactNode;
+  sectionClassName?: string;
 }) {
   const reducedMotion = useReducedMotionSafe();
   const isEnding = id === "ending";
   return (
-    <section id={id} className="relative z-10 scroll-mt-20 px-4 py-12 sm:px-6 sm:py-16">
+    <section id={id} className={cn("relative z-10 px-4 py-12 sm:px-6 sm:py-16", sectionClassName ?? "scroll-mt-20")}>
       {isEnding ? (
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-[#0D070B] via-transparent to-[#050507]" />
@@ -520,6 +528,7 @@ export default function ProposalLuxuryPage() {
   const [openReason, setOpenReason] = useState<number | null>(0);
   const [openChange, setOpenChange] = useState<number | null>(0);
   const reducedMotion = useReducedMotionSafe();
+  const { highlightActive: letterHighlight, scrollToLetter } = useLetterScrollArrival();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const attemptPlayBestEffort = async (fromStart: boolean) => {
@@ -534,19 +543,20 @@ export default function ProposalLuxuryPage() {
     }
 
     try {
-      audio.muted = true;
+      audio.muted = false;
       await audio.play();
       setMusicBlocked(false);
-      setMusicNeedsUnmute(true);
+      setMusicNeedsUnmute(false);
     } catch {
       try {
-        audio.muted = false;
+        audio.muted = true;
         await audio.play();
         setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
+        setMusicNeedsUnmute(true);
       } catch {
         setMusicBlocked(true);
         setMusicNeedsUnmute(false);
+        setMusicOn(false);
       }
     }
   };
@@ -595,12 +605,6 @@ export default function ProposalLuxuryPage() {
   }, []);
 
   useEffect(() => {
-    if (!musicOn) return;
-    void attemptPlayBestEffort(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (!audioRef.current) return;
     const audio = audioRef.current;
 
@@ -619,46 +623,8 @@ export default function ProposalLuxuryPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-
-    const onFirstUserGesture = async () => {
-      try {
-        if (audio.paused) {
-          audio.muted = false;
-          await audio.play();
-        } else {
-          audio.muted = false;
-        }
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true });
-    window.addEventListener("wheel", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("scroll", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchstart", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchmove", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("wheel", onFirstUserGesture);
-      window.removeEventListener("scroll", onFirstUserGesture);
-      window.removeEventListener("touchstart", onFirstUserGesture);
-      window.removeEventListener("touchmove", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
   function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToSection(id);
   }
 
   function triggerSparkle() {
@@ -667,18 +633,7 @@ export default function ProposalLuxuryPage() {
   }
 
   const handleTuneButton = () => {
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort(true);
-      return;
-    }
-
-    if (musicBlocked || musicNeedsUnmute || !isPlaying) {
-      void attemptPlayBestEffort(true);
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
   return (
@@ -686,7 +641,7 @@ export default function ProposalLuxuryPage() {
       <LuxuryBackground />
       <ChampagneDustBackground />
       <ChampagneSparkle active={sparkleOn} />
-      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" autoPlay muted playsInline />
+      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" playsInline />
 
       <motion.button
         type="button"
@@ -753,7 +708,7 @@ export default function ProposalLuxuryPage() {
                   type="button"
                   onClick={() => {
                     triggerSparkle();
-                    scrollTo("letter");
+                    scrollToLetter(() => setPromiseOpen(true));
                   }}
                   className="rounded-2xl bg-[#F6E8C8] px-5 py-3 font-sans text-sm font-medium text-[#100B0B] shadow-[0_22px_90px_rgba(246,232,200,0.14)] transition hover:-translate-y-0.5 hover:bg-[#FFF7EA]"
                 >
@@ -1049,8 +1004,14 @@ export default function ProposalLuxuryPage() {
         </motion.div>
       </section>
 
-      <SectionShell id="letter" eyebrow="" title={templateData.letter.title}>
-        <GlassCard className="relative overflow-hidden bg-[linear-gradient(145deg,rgba(246,232,200,0.11),rgba(255,255,255,0.045))]">
+      <SectionShell
+        id={PROPOSAL_LETTER_SECTION_ID}
+        eyebrow=""
+        title={templateData.letter.title}
+        sectionClassName="scroll-mt-24"
+      >
+        <LetterArrivalHighlight active={letterHighlight} ringRgb="214,185,130">
+          <GlassCard className="relative overflow-hidden bg-[linear-gradient(145deg,rgba(246,232,200,0.11),rgba(255,255,255,0.045))]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(246,232,200,0.12),transparent_60%)]" />
           <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#D6B982]/55 to-transparent" />
           <div className="pointer-events-none absolute left-5 top-4 text-7xl font-semibold leading-none text-[#F6E8C8]/10">“</div>
@@ -1106,6 +1067,7 @@ export default function ProposalLuxuryPage() {
             </motion.div>
           )}
         </GlassCard>
+        </LetterArrivalHighlight>
       </SectionShell>
 
       <section id="proposal" className="relative z-10 scroll-mt-20 px-4 py-14 sm:px-6 sm:py-20 lg:py-20">

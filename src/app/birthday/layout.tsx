@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 
-import { createPageMetadata } from "@/lib/metadata";
+import { createPageMetadata, OG_IMAGES } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
   title: "Birthday Wish Pages That Pop | WowWish",
   description: "Personalized birthday wish pages with photos, music, and a private link. From ₹999.",
   path: "/birthday",
+  ogImage: OG_IMAGES.birthday,
 });
 
 export default function BirthdayLayout({ children }: { children: ReactNode }) {

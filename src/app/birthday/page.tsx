@@ -351,7 +351,6 @@ export default function BirthdayPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fadeTimerRef = useRef<number | null>(null);
-  const shouldPlayMusicRef = useRef(false);
 
   function clearFadeTimer() {
     if (fadeTimerRef.current) {
@@ -381,23 +380,19 @@ export default function BirthdayPage() {
 
   function startMusic() {
     const a = audioRef.current;
-    if (!a) return;
-    shouldPlayMusicRef.current = true;
+    if (a) a.muted = false;
     setMusicOn(true);
-    a.loop = true;
-    a.volume = 0;
   }
 
   function stopMusic() {
-    const a = audioRef.current;
-    if (!a) return;
-    shouldPlayMusicRef.current = false;
     setMusicOn(false);
-    fadeTo(0, { thenPause: true });
-    window.setTimeout(() => {
-      if (shouldPlayMusicRef.current) return;
-      a.currentTime = 0;
-    }, 420);
+  }
+
+  function replaySurprise() {
+    setGiftOpen(false);
+    setCakeCut(false);
+    triggerConfetti();
+    window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   }
 
   useEffect(() => {
@@ -405,18 +400,31 @@ export default function BirthdayPage() {
     if (!a) return;
 
     if (!musicOn) {
+      fadeTo(0, { thenPause: true });
+      window.setTimeout(() => {
+        if (audioRef.current?.paused === false) return;
+        a.currentTime = 0;
+      }, 420);
       return;
     }
 
     a.loop = true;
     a.volume = 0;
-    a.play()
-      .then(() => {
+    void (async () => {
+      try {
+        a.muted = false;
+        await a.play();
         fadeTo(0.3);
-      })
-      .catch(() => {
-        setMusicOn(false);
-      });
+      } catch {
+        try {
+          a.muted = true;
+          await a.play();
+          fadeTo(0.3);
+        } catch {
+          setMusicOn(false);
+        }
+      }
+    })();
   }, [musicOn]);
 
   useEffect(() => {
@@ -458,7 +466,7 @@ export default function BirthdayPage() {
       <BirthdayBackground />
       <ConfettiBurst active={confettiOn} />
 
-      <audio ref={audioRef} src="/assets/birthday-bg-music.mp3" preload="none" />
+      <audio ref={audioRef} src="/assets/birthday-bg-music.mp3" preload="auto" playsInline />
 
       <header className="hidden" />
 
@@ -539,7 +547,6 @@ export default function BirthdayPage() {
                   type="button"
                   onClick={() => {
                     triggerConfetti();
-                    if (!shouldPlayMusicRef.current) startMusic();
                     scrollTo("intro");
                   }}
                   whileTap={reducedMotion ? undefined : { scale: 0.98 }}
@@ -968,9 +975,32 @@ export default function BirthdayPage() {
         </GlassCard>
       </SectionShell>
 
-      <DemoStickyCTA occasion="Birthday" templateName="Birthday Pop Story" recipientName={data.friendName} demoUrl="/birthday" />
+      <section
+        id="finale"
+        className="relative z-10 scroll-mt-24 flex min-h-screen flex-col items-center justify-start px-4 pt-16 pb-8 md:pt-24 sm:px-6 sm:pb-12"
+      >
+        <div className="mx-auto w-full max-w-5xl">
+          <motion.div
+            initial={{ y: 10 }}
+            whileInView={{ y: 0 }}
+            viewport={{ once: true, amount: 0.2, margin: "-12% 0px -8% 0px" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-5"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+              className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-[#F97316]"
+            >
+              Final burst
+            </motion.div>
+            <RevealHeading className="max-w-full whitespace-normal break-words text-balance text-3xl font-black leading-tight tracking-tight text-[#3B0B2E] sm:text-5xl">
+              {data.finale.title}
+            </RevealHeading>
+          </motion.div>
 
-      <SectionShell id="finale" eyebrow="Final burst" title={data.finale.title}>
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <GlassCard className="relative overflow-hidden">
             <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#EC4899]/16 blur-2xl" />
@@ -982,10 +1012,7 @@ export default function BirthdayPage() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <motion.button
                 type="button"
-                onClick={() => {
-                  triggerConfetti();
-                  scrollTo("timeline");
-                }}
+                onClick={replaySurprise}
                 whileTap={reducedMotion ? undefined : { scale: 0.99 }}
                 animate={
                   reducedMotion
@@ -1032,7 +1059,10 @@ export default function BirthdayPage() {
             </div>
           </motion.div>
         </div>
-      </SectionShell>
+        </div>
+      </section>
+
+      <DemoStickyCTA occasion="Birthday" templateName="Birthday Pop Story" recipientName={data.friendName} demoUrl="/birthday" />
 
       <div aria-hidden className="h-28" />
       <footer className="hidden" />

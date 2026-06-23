@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import AnniversaryNumberScoreboard from "@/components/wowwish/AnniversaryNumberScoreboard";
 import { AnniversaryMiniFilmStrip, AnniversaryScenePhoto } from "@/components/wowwish/AnniversaryFilmPhotos";
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import { DelightCTA, ScrollCTA } from "@/components/wowwish/treatments";
 import { RevealHeading, cardFadeUp, borderDraw } from "@/components/wowwish/scrollReveal";
 import photo1 from "./1.png";
 import photo2 from "./2.png";
@@ -80,7 +81,7 @@ const templateData: TemplateData = {
     subheadline:
       "One more year of our cute chaos. We tease, we fight, we order food, we fix it — and somehow you’re still my favorite person.",
     ctaPrimary: "Start the cute chaos",
-    ctaSecondary: "Open our little story",
+    ctaSecondary: "Open confession jar",
   },
 
   photos: {
@@ -535,19 +536,20 @@ export default function AnniversaryCutePage() {
     audio.loop = true;
 
     try {
-      audio.muted = true;
+      audio.muted = false;
       await audio.play();
       setMusicBlocked(false);
-      setMusicNeedsUnmute(true);
+      setMusicNeedsUnmute(false);
     } catch {
       try {
-        audio.muted = false;
+        audio.muted = true;
         await audio.play();
         setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
+        setMusicNeedsUnmute(true);
       } catch {
         setMusicBlocked(true);
         setMusicNeedsUnmute(false);
+        setMusicOn(false);
       }
     }
   };
@@ -588,52 +590,8 @@ export default function AnniversaryCutePage() {
     audio.currentTime = 0;
   }, [musicOn]);
 
-  useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-
-    const onFirstUserGesture = async () => {
-      try {
-        if (audio.paused) {
-          audio.muted = false;
-          await audio.play();
-        } else {
-          audio.muted = false;
-        }
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true });
-    window.addEventListener("wheel", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("scroll", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchstart", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchmove", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("wheel", onFirstUserGesture);
-      window.removeEventListener("scroll", onFirstUserGesture);
-      window.removeEventListener("touchstart", onFirstUserGesture);
-      window.removeEventListener("touchmove", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
   const handleVibeButton = () => {
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort();
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
   const openReveal = () => {
@@ -658,7 +616,7 @@ export default function AnniversaryCutePage() {
       <CuteAmbient />
       <HeartConfettiBurst active={burstOn} />
 
-      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" autoPlay muted playsInline />
+      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" playsInline />
 
       <motion.button
         type="button"
@@ -696,20 +654,18 @@ export default function AnniversaryCutePage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("photos")?.scrollIntoView({ behavior: "smooth" })}
+                <ScrollCTA
+                  scrollTargetId="story"
                   className="rounded-[20px] bg-[#F4845F] px-5 py-3 text-sm font-bold text-white shadow-[0_18px_60px_rgba(244,132,95,0.24)] transition hover:bg-[#E66F4D]"
                 >
                   {templateData.hero.ctaPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("surprise")?.scrollIntoView({ behavior: "smooth" })}
+                </ScrollCTA>
+                <ScrollCTA
+                  scrollTargetId="confessions-jar"
                   className="rounded-[20px] border border-[#F4A896] bg-white px-5 py-3 text-sm font-bold text-[#C85C41] transition hover:bg-[#FFF8F3]"
                 >
                   {templateData.hero.ctaSecondary}
-                </button>
+                </ScrollCTA>
               </div>
             </motion.div>
 
@@ -742,7 +698,9 @@ export default function AnniversaryCutePage() {
         </div>
       </section>
 
-      <AnniversaryScenePhoto photo={templateData.photos.items[0]} sceneLabel="A MOMENT WE KEEP" desktopMaxWidthClassName="lg:max-w-[420px]" />
+      <section id="story" className="scroll-mt-24">
+        <AnniversaryScenePhoto photo={templateData.photos.items[0]} sceneLabel="A MOMENT WE KEEP" desktopMaxWidthClassName="lg:max-w-[420px]" />
+      </section>
 
       <Section id="timeline" title={templateData.timeline.title}>
         <div className="space-y-3">
@@ -981,15 +939,13 @@ export default function AnniversaryCutePage() {
               >
                 {templateData.finale.ctaPrimary}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerBurst();
-                }}
+              <DelightCTA
+                message="Sending the biggest hug."
+                glyphs={["🫂", "♥", "✨", "🤗", "💕"]}
                 className="w-full rounded-[20px] border border-[#F4A896] bg-white px-5 py-3 text-sm font-bold text-[#C85C41] transition hover:bg-[#FFF8F3] sm:w-auto"
               >
                 {templateData.finale.ctaSecondary}
-              </button>
+              </DelightCTA>
             </div>
           </Card>
 

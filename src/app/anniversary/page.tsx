@@ -7,7 +7,9 @@ import { motion, useInView } from "framer-motion";
 import AnniversaryNumberScoreboard from "@/components/wowwish/AnniversaryNumberScoreboard";
 import { AnniversaryMiniFilmStrip, AnniversaryScenePhoto } from "@/components/wowwish/AnniversaryFilmPhotos";
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import { ScrollCTA } from "@/components/wowwish/treatments";
 import { RevealHeading, cardFadeUp, borderDraw } from "@/components/wowwish/scrollReveal";
+import { scrollToSection } from "@/lib/scrollToSection";
 import photo1 from "./1.jpeg";
 import photo2 from "./2.jpeg";
 import photo3 from "./3.jpeg";
@@ -85,7 +87,7 @@ const templateData: TemplateData = {
     subheadline:
       "One more year of us — the quiet kind of love: little habits, big memories, and choosing each other again.",
     ctaPrimary: "Start our journey",
-    ctaSecondary: "Open our memories",
+    ctaSecondary: "Open sealed feeling",
   },
 
   photos: {
@@ -562,8 +564,6 @@ function SoftSparkle({ active }: { active: boolean }) {
   );
 }
 
-type MemoryNote = { title: string; body: string };
-
 const wishIcons: Record<string, string> = {
   "more soft mornings": "🌅",
   "more laughter": "😄",
@@ -575,29 +575,18 @@ const wishIcons: Record<string, string> = {
   "more love": "♡",
 };
 
-function pickNextIndex(current: number, total: number) {
-  if (total <= 1) return 0;
-  return (current + 1) % total;
-}
-
 export default function AnniversaryPage() {
   const [musicOn, setMusicOn] = useState(true);
   const [musicBlocked, setMusicBlocked] = useState(false);
   const [musicNeedsUnmute, setMusicNeedsUnmute] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [memoryIndex, setMemoryIndex] = useState(0);
-  const [memoryOpen, setMemoryOpen] = useState(false);
   const [envelopeOpen, setEnvelopeOpen] = useState(false);
   const [petalShowerOn, setPetalShowerOn] = useState(false);
   const [letterOpen, setLetterOpen] = useState(false);
-  const [memoryToast, setMemoryToast] = useState(false);
-
   const [sparkleOn, setSparkleOn] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const notes = templateData.memoryReveal.notes;
 
   const attemptPlayBestEffort = async () => {
     if (!audioRef.current) return;
@@ -606,19 +595,20 @@ export default function AnniversaryPage() {
     audio.loop = true;
 
     try {
-      audio.muted = true;
+      audio.muted = false;
       await audio.play();
       setMusicBlocked(false);
-      setMusicNeedsUnmute(true);
+      setMusicNeedsUnmute(false);
     } catch {
       try {
-        audio.muted = false;
+        audio.muted = true;
         await audio.play();
         setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
+        setMusicNeedsUnmute(true);
       } catch {
         setMusicBlocked(true);
         setMusicNeedsUnmute(false);
+        setMusicOn(false);
       }
     }
   };
@@ -659,78 +649,25 @@ export default function AnniversaryPage() {
     audio.currentTime = 0;
   }, [musicOn]);
 
-  useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-
-    const onFirstUserGesture = async () => {
-      try {
-        if (audio.paused) {
-          audio.muted = false;
-          await audio.play();
-        } else {
-          audio.muted = false;
-        }
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true });
-    window.addEventListener("wheel", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("scroll", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchstart", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchmove", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("wheel", onFirstUserGesture);
-      window.removeEventListener("scroll", onFirstUserGesture);
-      window.removeEventListener("touchstart", onFirstUserGesture);
-      window.removeEventListener("touchmove", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
   const handleVibeButton = () => {
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort();
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
-  const openNextMemory = () => {
-    setMemoryOpen(true);
-    setMemoryIndex((idx) => pickNextIndex(idx, notes.length));
+  const startJourney = () => {
+    setSparkleOn(true);
+    window.setTimeout(() => setSparkleOn(false), 1300);
+    scrollToSection("milestone");
+  };
+
+  const handleFinale = () => {
+    setSparkleOn(true);
+    window.setTimeout(() => setSparkleOn(false), 1300);
   };
 
   const openEnvelope = () => {
     setEnvelopeOpen(true);
     setPetalShowerOn(true);
     window.setTimeout(() => setPetalShowerOn(false), 2600);
-  };
-
-  const startJourney = () => {
-    setSparkleOn(true);
-    setMemoryToast(true);
-    window.setTimeout(() => setSparkleOn(false), 1300);
-    window.setTimeout(() => setMemoryToast(false), 1800);
-    document.getElementById("milestone")?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const currentNote: MemoryNote = notes[memoryIndex] ?? notes[0];
-
-  const handleFinale = () => {
-    setSparkleOn(true);
-    window.setTimeout(() => setSparkleOn(false), 1300);
   };
 
   return (
@@ -740,7 +677,7 @@ export default function AnniversaryPage() {
       <MemoryJournalParticles />
       <SoftSparkle active={sparkleOn} />
 
-      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" autoPlay muted playsInline />
+      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" playsInline />
 
       <motion.button
         type="button"
@@ -810,13 +747,12 @@ export default function AnniversaryPage() {
                 >
                   {templateData.hero.ctaPrimary}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("memory")?.scrollIntoView({ behavior: "smooth" })}
+                <ScrollCTA
+                  scrollTargetId="sealed-envelope"
                   className="rounded-2xl border border-[#C17A6F]/24 bg-[#FFFAF9]/72 px-5 py-3 text-sm font-semibold text-[#8E5149] transition hover:bg-[#FFFAF9]"
                 >
                   {templateData.hero.ctaSecondary}
-                </button>
+                </ScrollCTA>
               </div>
             </motion.div>
 
@@ -836,16 +772,6 @@ export default function AnniversaryPage() {
             </motion.div>
           </div>
         </div>
-        {memoryToast ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8 }}
-            className="fixed left-1/2 top-5 z-40 -translate-x-1/2 rounded-full border border-black/10 bg-white/85 px-4 py-2 text-xs font-semibold text-slate-900 shadow-[0_18px_60px_rgba(15,23,42,0.14)] backdrop-blur-xl"
-          >
-            Memory unlocked
-          </motion.div>
-        ) : null}
       </section>
 
       <section id="milestone" className="scroll-mt-24 px-4 py-8 sm:px-6 sm:py-10">
@@ -1000,51 +926,6 @@ export default function AnniversaryPage() {
 
       <AnniversaryMiniFilmStrip photos={[templateData.photos.items[2], templateData.photos.items[3]]} />
 
-      <SectionShell id="memory" eyebrow="" title={templateData.memoryReveal.title}>
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <GlassCard className="relative overflow-hidden">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#FFE3B0]/28 blur-3xl" />
-            <div className="relative text-sm font-semibold text-slate-800">{templateData.memoryReveal.prompt}</div>
-            <div className="relative mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tap to reveal</div>
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={openNextMemory}
-                className="w-full rounded-2xl bg-[#C17A6F] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_70px_rgba(193,122,111,0.22)] transition hover:bg-[#A9655C]"
-              >
-                {memoryOpen ? "New scene" : "Open a saved scene"}
-              </button>
-            </div>
-
-            <div className="mt-5">
-              {!memoryOpen ? null : (
-                <motion.div
-                  key={currentNote.title}
-                  initial={{ opacity: 0, y: 22, scale: 0.96, filter: "blur(10px)" }}
-                  animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="rounded-2xl border border-black/10 bg-[#FFFDF8] p-4 shadow-[0_18px_70px_rgba(15,23,42,0.12)]"
-                >
-                  <div className="inline-flex rounded-full border border-black/10 bg-[#FFF7F0] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600/75">
-                    Saved scene {String(memoryIndex + 1).padStart(2, "0")}/{String(notes.length).padStart(2, "0")}
-                  </div>
-                  <div className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">{currentNote.title}</div>
-                  <div className="mt-2 text-sm leading-relaxed text-slate-700">{currentNote.body}</div>
-                </motion.div>
-              )}
-            </div>
-          </GlassCard>
-
-          <div className="rounded-3xl border border-[#C17A6F]/18 bg-[#FFFAF9]/88 p-6 shadow-[0_24px_80px_rgba(134,72,63,0.10)] backdrop-blur-xl">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.20em] text-slate-700/60">memory drawer</div>
-            <div className="mt-2 text-lg font-semibold text-slate-950">Tiny scenes. Big feeling.</div>
-            <div className="mt-2 text-sm leading-relaxed text-slate-700">
-              These are not big milestones. They are the small moments that made the year feel like ours.
-            </div>
-          </div>
-        </div>
-      </SectionShell>
-
       <SectionShell id="little" eyebrow="" title={templateData.littleThings.title}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {templateData.littleThings.cards.map((c, idx) => (
@@ -1190,7 +1071,7 @@ export default function AnniversaryPage() {
 
       <DemoStickyCTA occasion="Anniversary" templateName="Anniversary Memory Film" recipientName={templateData.partnerName} demoUrl="/anniversary" />
 
-      <SectionShell id="finale" eyebrow="" title={templateData.finale.title}>
+      <SectionShell id="anniversary-note" eyebrow="" title={templateData.finale.title}>
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <GlassCard>
             <p className="text-pretty text-sm leading-relaxed text-slate-700 sm:text-base">{templateData.finale.body}</p>
@@ -1200,20 +1081,11 @@ export default function AnniversaryPage() {
                 type="button"
                 onClick={() => {
                   handleFinale();
-                  document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+                  scrollToSection("hero");
                 }}
                 className="w-full rounded-2xl bg-[#C17A6F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A9655C] sm:w-auto"
               >
                 {templateData.finale.ctaPrimary}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleFinale();
-                }}
-                className="w-full rounded-2xl border border-black/10 bg-white/60 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white sm:w-auto"
-              >
-                {templateData.finale.ctaSecondary}
               </button>
             </div>
           </GlassCard>

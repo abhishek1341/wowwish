@@ -2,9 +2,10 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import { ScrollCTA } from "@/components/wowwish/treatments/ScrollCTA";
 import { RevealHeading, cardFadeUp, borderDraw } from "@/components/wowwish/scrollReveal";
 import photo1 from "./1.png";
 import photo2 from "./2.png";
@@ -195,6 +196,35 @@ const reasonReveals = [
 ];
 
 const reasonBadges = ["tap to blush", "tiny confession", "soft proof", "heart alert", "okay wow", "not pretending anymore"];
+
+const reasonRevealClassName =
+  "rounded-2xl border border-pink-200/70 bg-pink-50/80 px-3 py-2 text-xs font-black leading-relaxed text-pink-700";
+
+const longestReasonReveal = reasonReveals.reduce((longest, line) => (line.length > longest.length ? line : longest), "");
+
+function ReasonLineReveal({ visible, text, reducedMotion }: { visible: boolean; text: string; reducedMotion: boolean }) {
+  return (
+    <div className="relative mt-3">
+      <div aria-hidden className={cn(reasonRevealClassName, "invisible pointer-events-none")}>
+        {longestReasonReveal}
+      </div>
+      <AnimatePresence initial={false}>
+        {visible ? (
+          <motion.div
+            key="reason-line"
+            initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0.2 : 0.28, ease: "easeOut" }}
+            className={cn(reasonRevealClassName, "absolute inset-x-0 top-0")}
+          >
+            {text}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const tinyLabels = ["saved", "favorite", "voice note", "replay", "soft spot", "important"];
 
@@ -577,19 +607,20 @@ export default function ProposalCutePage() {
     }
 
     try {
-      audio.muted = true;
+      audio.muted = false;
       await audio.play();
       setMusicBlocked(false);
-      setMusicNeedsUnmute(true);
+      setMusicNeedsUnmute(false);
     } catch {
       try {
-        audio.muted = false;
+        audio.muted = true;
         await audio.play();
         setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
+        setMusicNeedsUnmute(true);
       } catch {
         setMusicBlocked(true);
         setMusicNeedsUnmute(false);
+        setMusicOn(false);
       }
     }
   };
@@ -638,12 +669,6 @@ export default function ProposalCutePage() {
   }, []);
 
   useEffect(() => {
-    if (!musicOn) return;
-    void attemptPlayBestEffort(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (!audioRef.current) return;
     const audio = audioRef.current;
 
@@ -662,48 +687,6 @@ export default function ProposalCutePage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-
-    const onFirstUserGesture = async () => {
-      try {
-        if (audio.paused) {
-          audio.muted = false;
-          await audio.play();
-        } else {
-          audio.muted = false;
-        }
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true });
-    window.addEventListener("wheel", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("scroll", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener(
-      "touchstart",
-      onFirstUserGesture,
-      { once: true, passive: true } as AddEventListenerOptions,
-    );
-    window.addEventListener("touchmove", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("wheel", onFirstUserGesture);
-      window.removeEventListener("scroll", onFirstUserGesture);
-      window.removeEventListener("touchstart", onFirstUserGesture);
-      window.removeEventListener("touchmove", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -714,18 +697,7 @@ export default function ProposalCutePage() {
   }
 
   const handleTuneButton = () => {
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort(true);
-      return;
-    }
-
-    if (musicBlocked || musicNeedsUnmute || !isPlaying) {
-      void attemptPlayBestEffort(true);
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
   return (
@@ -736,7 +708,7 @@ export default function ProposalCutePage() {
       <CuteSparkleBackground />
       <HeartBurst active={burstOn} />
 
-      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" autoPlay muted playsInline />
+      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" playsInline />
 
       <motion.button
         type="button"
@@ -799,13 +771,12 @@ export default function ProposalCutePage() {
                   {templateData.hero.cta}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => scrollTo("photos")}
+                <ScrollCTA
+                  scrollTargetId="moments"
                   className="rounded-2xl border border-slate-900/10 bg-white/60 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-white"
                 >
-                  See the photos
-                </button>
+                  {templateData.moments.title}
+                </ScrollCTA>
               </div>
             </motion.div>
           </div>
@@ -886,16 +857,11 @@ export default function ProposalCutePage() {
                     </div>
                     <div className="mt-3 text-base font-black text-slate-950">{c.title}</div>
                     <div className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">tap for the line</div>
-                    {openReason === idx ? (
-                      <motion.div
-                        initial={{ height: 0, y: 6 }}
-                        animate={{ height: "auto", y: 0 }}
-                        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                        className="mt-3 overflow-hidden rounded-2xl border border-pink-200/70 bg-pink-50/80 px-3 py-2 text-xs font-black leading-relaxed text-pink-700"
-                      >
-                        {reasonReveals[idx]}
-                      </motion.div>
-                    ) : null}
+                    <ReasonLineReveal
+                      visible={openReason === idx}
+                      text={reasonReveals[idx]}
+                      reducedMotion={reducedMotion}
+                    />
                   </div>
                 </button>
               </motion.div>

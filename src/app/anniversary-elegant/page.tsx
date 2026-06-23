@@ -7,7 +7,9 @@ import { motion } from "framer-motion";
 import AnniversaryNumberScoreboard from "@/components/wowwish/AnniversaryNumberScoreboard";
 import { AnniversaryMiniFilmStrip, AnniversaryScenePhoto } from "@/components/wowwish/AnniversaryFilmPhotos";
 import DemoStickyCTA from "@/components/wowwish/DemoStickyCTA";
+import { DelightCTA, ScrollCTA } from "@/components/wowwish/treatments";
 import { RevealHeading, cardFadeUp, borderDraw } from "@/components/wowwish/scrollReveal";
+import { scrollToSection } from "@/lib/scrollToSection";
 import photo1 from "./1.png";
 import photo2 from "./2.png";
 import photo3 from "./3.png";
@@ -463,19 +465,20 @@ export default function AnniversaryElegantPage() {
     audio.loop = true;
 
     try {
-      audio.muted = true;
+      audio.muted = false;
       await audio.play();
       setMusicBlocked(false);
-      setMusicNeedsUnmute(true);
+      setMusicNeedsUnmute(false);
     } catch {
       try {
-        audio.muted = false;
+        audio.muted = true;
         await audio.play();
         setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
+        setMusicNeedsUnmute(true);
       } catch {
         setMusicBlocked(true);
         setMusicNeedsUnmute(false);
+        setMusicOn(false);
       }
     }
   };
@@ -573,57 +576,8 @@ export default function AnniversaryElegantPage() {
     audio.currentTime = 0;
   }, [musicOn]);
 
-  useEffect(() => {
-    if (!musicOn || (!musicBlocked && !musicNeedsUnmute)) return;
-    if (!audioRef.current) return;
-    const audio = audioRef.current;
-
-    const onFirstUserGesture = async () => {
-      try {
-        if (audio.paused) {
-          audio.muted = false;
-          await audio.play();
-        } else {
-          audio.muted = false;
-        }
-        setMusicBlocked(false);
-        setMusicNeedsUnmute(false);
-      } catch {
-        setMusicBlocked(true);
-        setMusicNeedsUnmute(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", onFirstUserGesture, { once: true });
-    window.addEventListener("wheel", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("scroll", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchstart", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("touchmove", onFirstUserGesture, { once: true, passive: true } as AddEventListenerOptions);
-    window.addEventListener("keydown", onFirstUserGesture, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", onFirstUserGesture);
-      window.removeEventListener("wheel", onFirstUserGesture);
-      window.removeEventListener("scroll", onFirstUserGesture);
-      window.removeEventListener("touchstart", onFirstUserGesture);
-      window.removeEventListener("touchmove", onFirstUserGesture);
-      window.removeEventListener("keydown", onFirstUserGesture);
-    };
-  }, [musicOn, musicBlocked, musicNeedsUnmute]);
-
   const handleTuneButton = () => {
-    if (!musicOn) {
-      setMusicOn(true);
-      void attemptPlayBestEffort();
-      return;
-    }
-
-    if (musicBlocked || musicNeedsUnmute || !isPlaying) {
-      void attemptPlayBestEffort();
-      return;
-    }
-
-    setMusicOn(false);
+    setMusicOn((prev) => !prev);
   };
 
   const openNextThankYou = () => {
@@ -643,7 +597,7 @@ export default function AnniversaryElegantPage() {
       <ElegantBackground />
       <SubtleSparkle active={sparkleOn} />
 
-      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" autoPlay muted playsInline />
+      <audio ref={audioRef} src={MUSIC_SRC} preload="auto" playsInline />
 
       <motion.button
         type="button"
@@ -681,20 +635,18 @@ export default function AnniversaryElegantPage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("photos")?.scrollIntoView({ behavior: "smooth" })}
+                <ScrollCTA
+                  scrollTargetId="story"
                   className="rounded-2xl bg-[#B89A6A] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(184,154,106,0.24)] transition hover:bg-[#9D8156]"
                 >
                   {templateData.hero.ctaPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("quiet-letter")?.scrollIntoView({ behavior: "smooth" })}
+                </ScrollCTA>
+                <ScrollCTA
+                  scrollTargetId="quiet-letter"
                   className="rounded-2xl border border-[#B89A6A]/24 bg-[#FDFAF5]/80 px-5 py-3 text-sm font-semibold text-[#8D744F] transition hover:bg-[#FDFAF5]"
                 >
                   {templateData.hero.ctaSecondary}
-                </button>
+                </ScrollCTA>
               </div>
             </motion.div>
 
@@ -754,7 +706,9 @@ export default function AnniversaryElegantPage() {
         </div>
       </section>
 
-      <AnniversaryScenePhoto photo={templateData.photos.items[0]} sceneLabel="A MOMENT WE KEEP" desktopMaxWidthClassName="lg:max-w-[420px]" />
+      <section id="story" className="scroll-mt-24">
+        <AnniversaryScenePhoto photo={templateData.photos.items[0]} sceneLabel="A MOMENT WE KEEP" desktopMaxWidthClassName="lg:max-w-[420px]" />
+      </section>
 
       <Section id="life" eyebrow="" title={templateData.life.title}>
         <div className="space-y-4">
@@ -885,18 +839,6 @@ export default function AnniversaryElegantPage() {
             </motion.div>
           </motion.button>
 
-          {quietLetterOpen ? (
-            <motion.button
-              type="button"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              onClick={triggerSparkle}
-              className="mt-6 rounded-2xl bg-[#B89A6A] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(184,154,106,0.24)] transition hover:bg-[#9D8156]"
-            >
-              Keep this, always
-            </motion.button>
-          ) : null}
         </motion.div>
       </section>
 
@@ -912,21 +854,19 @@ export default function AnniversaryElegantPage() {
                 type="button"
                 onClick={() => {
                   triggerSparkle();
-                  document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+                  scrollToSection("hero");
                 }}
                 className="w-full rounded-2xl bg-[#B89A6A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9D8156] sm:w-auto"
               >
                 {templateData.finale.ctaPrimary}
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerSparkle();
-                }}
+              <DelightCTA
+                message="One more year, still choosing you."
+                glyphs={["✨", "♥", "✦", "💫", "♡"]}
                 className="w-full rounded-2xl border border-[#B89A6A]/24 bg-[#FDFAF5]/86 px-5 py-3 text-sm font-semibold text-[#8D744F] transition hover:bg-[#FDFAF5] sm:w-auto"
               >
                 {templateData.finale.ctaSecondary}
-              </button>
+              </DelightCTA>
             </div>
           </Card>
 
