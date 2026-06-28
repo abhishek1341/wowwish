@@ -24,8 +24,6 @@ import {
   getWowWishTemplatesByCategory,
   getWowWishTheme,
   WOWWISH_LOGO_SRC,
-  WOWWISH_PREMIUM_PRICE_INR,
-  WOWWISH_STANDARD_PRICE_INR,
   wowwishCategories,
   wowwishTemplates,
   wowwishThemes,
@@ -34,6 +32,15 @@ import {
   type WowWishThemeId,
 } from "@/lib/wowwishV2";
 import { BRAND_NAME, BRAND_TAGLINE, formatInr } from "@/components/site/siteConstants";
+import { PriceOnwards } from "@/components/site/PriceOnwards";
+import {
+  formatPriceOnwards,
+  getTemplatePricing,
+  WOWWISH_PREMIUM_OLD_PRICE_INR,
+  WOWWISH_PREMIUM_PRICE_INR,
+  WOWWISH_SURPRISE_OLD_PRICE_INR,
+  WOWWISH_SURPRISE_PRICE_INR,
+} from "@/lib/pricing";
 import {
   WOWWISH_EMAIL,
   buildWowWishWhatsAppUrl,
@@ -67,8 +74,8 @@ function getCustomizeEventLabel(template: WowWishTemplate) {
 }
 
 const packageOptions: Record<WowWishPackageId, { name: string; price: string; cta: string }> = {
-  surprise: { name: "Surprise Page", price: "₹999", cta: "Start with ₹999" },
-  premium: { name: "Premium Memory Story", price: "₹1,499", cta: "Make it Premium" },
+  surprise: { name: "Surprise Page", price: formatPriceOnwards(WOWWISH_SURPRISE_PRICE_INR), cta: "Start with ₹499" },
+  premium: { name: "Premium Memory Story", price: formatPriceOnwards(WOWWISH_PREMIUM_PRICE_INR), cta: "Make it Premium" },
 };
 
 const revealEase = [0.22, 1, 0.36, 1] as const;
@@ -365,7 +372,6 @@ const compactTemplateContent: Record<
     mood: "Luxury",
     promise: "A premium birthday page with royal gold styling and elegant storytelling.",
     chips: ["Photos", "Music", "Premium look"],
-    price: "From ₹1,499",
   },
   anniversary: {
     mood: "Romantic",
@@ -381,7 +387,6 @@ const compactTemplateContent: Record<
     mood: "Elegant",
     promise: "A premium anniversary page with soft visuals, promises, and calm storytelling.",
     chips: ["Photos", "Music", "Promises"],
-    price: "From ₹1,499",
   },
   "proposal-romantic-glow": {
     mood: "Romantic",
@@ -799,7 +804,7 @@ function HeroSection({ openLead }: { openLead: (preset: LeadPreset) => void }) {
           </div>
 
           <div className="mt-4 max-w-full rounded-2xl border border-[#E07B5A]/14 bg-white/74 px-4 py-3 text-sm font-bold leading-relaxed text-slate-700 shadow-[0_18px_55px_rgba(31,20,60,0.08)] backdrop-blur-xl">
-            From {formatInr(WOWWISH_STANDARD_PRICE_INR)} • Photos + music + message • Private shareable link
+            {formatPriceOnwards(WOWWISH_SURPRISE_PRICE_INR)} • Photos + music + message • Private shareable link
           </div>
         </div>
 
@@ -1007,7 +1012,7 @@ function HeroPreviewFallback({ preview }: { preview: HeroPreviewItem }) {
 }
 
 function TrustStrip() {
-  const items = ["From ₹999", "Preview before final delivery", "Photos sent on WhatsApp", "Private shareable link"];
+  const items = [formatPriceOnwards(WOWWISH_SURPRISE_PRICE_INR), "Preview before final delivery", "Photos sent on WhatsApp", "Private shareable link"];
 
   return (
     <section className="bg-[#FAFAF8] px-4 py-5 text-slate-950 sm:px-6 lg:px-8">
@@ -1242,7 +1247,7 @@ function WowWishTemplateCard({
   const theme = getWowWishTheme(template.themeId);
   const themeClass = getTemplateThemeClass(template);
   const compact = compactTemplateContent[template.id];
-  const priceLabel = compact?.price ?? template.priceLabel ?? `From ${formatInr(WOWWISH_STANDARD_PRICE_INR)}`;
+  const pricing = getTemplatePricing(template.category);
   const promise = compact?.promise ?? template.promise ?? template.description;
   const mood = compact?.mood ?? template.vibe ?? theme.name;
   const included = (compact?.chips ?? template.included ?? ["Photos", "Music", "Message"]).slice(0, 3);
@@ -1279,7 +1284,12 @@ function WowWishTemplateCard({
             </span>
           </div>
           <span className="ww-price-chip rounded-full px-3 py-1 text-[11px] font-black shadow-sm backdrop-blur">
-            {priceLabel}
+            <PriceOnwards
+              priceInr={pricing.priceInr}
+              oldPriceInr={pricing.oldPriceInr}
+              oldClassName="text-[10px]"
+              priceClassName="text-[11px]"
+            />
           </span>
         </div>
 
@@ -1315,7 +1325,7 @@ function WowWishTemplateCard({
               button_text: "View Demo",
               occasion: template.occasion,
               template_name: template.name,
-              price: priceLabel,
+              price: pricing.label,
             })
           }
           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-900/10 bg-white px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-slate-50"
@@ -1792,11 +1802,11 @@ function FAQSection() {
   const faqs = [
     ["What exactly is WowWish?", "WowWish is a manually customized digital wish page service. We create a private web link with photos, music, memories, and your message."],
     ["Is this a website or an image?", "It is a mobile-first wish website, not just a static image."],
-    ["What is included in the ₹999 package?", "A personalized wish page with name, message, 6–8 photos, music, basic animation, preview, and a private shareable link."],
+    ["What is included in the ₹499 package?", "A personalized wish page with name, message, 6–8 photos, music, basic animation, preview, and a private shareable link."],
     ["How do I place an order?", "Choose a template or package, submit details, and continue on WhatsApp."],
     ["Do I need to pay immediately?", "No. We confirm your details and final flow first."],
-    ["What is included in the ₹1,499 package?", "A richer memory story with custom emotional letter-style copy, 10–15 photos, premium section flow, stronger animation, and one revision."],
-    ["Why should I pay ₹999 instead of sending a normal wish?", "Because WowWish feels personal, replayable, and shareable. It is made around your photos, relationship, and message."],
+    ["What is included in the ₹999 package?", "A richer memory story with custom emotional letter-style copy, 10–15 photos, premium section flow, stronger animation, and one revision."],
+    ["Why should I pay ₹499 instead of sending a normal wish?", "Because WowWish feels personal, replayable, and shareable. It is made around your photos, relationship, and message."],
     ["How do I send photos?", "Photos can be sent on WhatsApp after submitting the form."],
     ["Can I choose the music?", "Yes. You can share a song or mood, and we will match it where possible."],
     ["Can you write the message for me?", "Yes. We can write short emotional copy or a premium letter-style message."],
@@ -1852,7 +1862,8 @@ function PricingSection({ openLead }: { openLead: (preset: LeadPreset) => void }
       <div className="mx-auto mt-8 grid w-full max-w-5xl gap-5 lg:grid-cols-2">
         <PriceCard
           name="Surprise Page"
-          price={WOWWISH_STANDARD_PRICE_INR}
+          price={WOWWISH_SURPRISE_PRICE_INR}
+          oldPrice={WOWWISH_SURPRISE_OLD_PRICE_INR}
           description="A beautiful personalized wish page made with their name, your message, photos, music, and a private shareable link. Perfect when you want something more special than a normal WhatsApp message."
           features={[
             "Personalized name and occasion",
@@ -1865,15 +1876,16 @@ function PricingSection({ openLead }: { openLead: (preset: LeadPreset) => void }
             "WhatsApp/Instagram-ready format",
             "Basic animation and section flow",
           ]}
-          cta="Start with ₹999"
+          cta="Start with ₹499"
           onClick={() => {
-            trackWowWishEvent("pricing_cta_click", { source: "pricing", package_name: "Surprise Page", price: "₹999" });
+            trackWowWishEvent("pricing_cta_click", { source: "pricing", package_name: "Surprise Page", price: "₹499 onwards" });
             openLead({ source: "pricing_standard", packageId: "surprise" });
           }}
         />
         <PriceCard
           name="Premium Memory Story"
           price={WOWWISH_PREMIUM_PRICE_INR}
+          oldPrice={WOWWISH_PREMIUM_OLD_PRICE_INR}
           premium
           description="A richer, more emotional wish page with premium design polish, deeper storytelling, custom letter-style copy, better photo flow, and cinematic memory sections."
           features={[
@@ -1890,7 +1902,7 @@ function PricingSection({ openLead }: { openLead: (preset: LeadPreset) => void }
           ]}
           cta="Make it Premium"
           onClick={() => {
-            trackWowWishEvent("pricing_cta_click", { source: "pricing", package_name: "Premium Memory Story", price: "₹1,499" });
+            trackWowWishEvent("pricing_cta_click", { source: "pricing", package_name: "Premium Memory Story", price: "₹999 onwards" });
             openLead({ source: "pricing_premium", packageId: "premium" });
           }}
         />
@@ -1917,6 +1929,7 @@ function PricingSection({ openLead }: { openLead: (preset: LeadPreset) => void }
 function PriceCard({
   name,
   price,
+  oldPrice,
   description,
   features,
   premium,
@@ -1925,6 +1938,7 @@ function PriceCard({
 }: {
   name: string;
   price: number;
+  oldPrice: number;
   description: string;
   features: string[];
   premium?: boolean;
@@ -1948,9 +1962,14 @@ function PriceCard({
           <div className="text-xl font-black">{name}</div>
           <div className={cn("mt-1 max-w-sm text-sm font-semibold leading-6", premium ? "text-white/68" : "text-slate-600")}>{description}</div>
         </div>
-        <div className="text-right">
-          <div className="text-xs font-black uppercase tracking-[0.18em] opacity-60">From</div>
-          <div className="text-3xl font-black">{formatInr(price)}</div>
+        <div className="shrink-0 text-right">
+          <div className={cn("text-[11px] font-semibold line-through opacity-60", premium ? "text-white/70" : "text-slate-500")}>
+            {formatInr(oldPrice)}
+          </div>
+          <div className={cn("mt-0.5 text-lg font-black leading-tight", premium ? "text-white" : "text-slate-950")}>
+            {formatInr(price)}
+          </div>
+          <div className={cn("text-xs font-semibold", premium ? "text-white/75" : "text-slate-600")}>onwards</div>
         </div>
       </div>
       <div className="mt-6 grid gap-2">

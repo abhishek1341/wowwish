@@ -1,7 +1,12 @@
 export const WOWWISH_LOGO_SRC = "/images/wowwish-logo.png";
 
-export const WOWWISH_STANDARD_PRICE_INR = 999;
-export const WOWWISH_PREMIUM_PRICE_INR = 1499;
+export {
+  WOWWISH_STANDARD_PRICE_INR,
+  WOWWISH_PREMIUM_PRICE_INR,
+  WOWWISH_SURPRISE_PRICE_INR,
+  WOWWISH_SURPRISE_OLD_PRICE_INR,
+  WOWWISH_PREMIUM_OLD_PRICE_INR,
+} from "@/lib/pricing";
 
 export type WowWishThemeId =
   | "genz-pop"
@@ -45,7 +50,6 @@ export type WowWishTemplate = {
   promise?: string;
   bestFor?: string;
   included?: string[];
-  priceLabel?: string;
   packageId?: "surprise" | "premium";
   previewImage?: string;
   demoPath: string;
@@ -147,7 +151,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A bold, fun birthday page with photos, music, inside jokes, and full celebration energy.",
     bestFor: "Best for siblings, college friends, boyfriend/girlfriend, and Gen Z birthday surprises.",
     included: ["Photos", "Music", "Funny copy", "Memory sections", "Private link"],
-    priceLabel: "From ₹999",
     packageId: "surprise",
     previewImage: "/images/birthday-pop-story-preview.png",
     demoPath: "/birthday",
@@ -163,7 +166,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A glowing birthday page made for reactions, memories, music, and fun birthday chaos.",
     bestFor: "Best for friends, siblings, college groups, and Gen Z birthday surprises.",
     included: ["Photos", "Music", "Bestie copy", "Memory sections", "Private link"],
-    priceLabel: "From ₹999",
     packageId: "surprise",
     previewImage: "/images/birthday-bestie-preview.png",
     demoPath: "/birthday-bestie",
@@ -179,7 +181,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A dosti-style birthday page full of memories, warmth, and squad energy.",
     bestFor: "Best for school friends, college groups, long-distance friends, and squad birthdays.",
     included: ["Photos", "Music", "Dosti copy", "Memory sections", "Private link"],
-    priceLabel: "From ₹999",
     packageId: "surprise",
     previewImage: "/images/birthday-yaari-preview.png",
     demoPath: "/birthday-yaari",
@@ -195,7 +196,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A premium birthday page with royal gold styling, photos, music, and elegant sections.",
     bestFor: "Best for premium birthday surprises for partners, family, and milestone birthdays.",
     included: ["Photos", "Music", "Premium theme", "Memory sections", "Private link"],
-    priceLabel: "From ₹1,499",
     packageId: "premium",
     demoPath: "/birthday",
   },
@@ -210,7 +210,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A soft, emotional anniversary page that turns your journey into a beautiful memory story.",
     bestFor: "Best for wife, husband, girlfriend, boyfriend, or couples celebrating years together.",
     included: ["Photos", "Music", "Emotional note", "Journey sections", "Private link"],
-    priceLabel: "From ₹999",
     packageId: "surprise",
     previewImage: "/images/anniversary-preview.png",
     demoPath: "/anniversary",
@@ -226,7 +225,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A cute anniversary page full of memories, chaos, inside jokes, and soft love.",
     bestFor: "Best for young couples, girlfriend/boyfriend, and playful anniversary surprises.",
     included: ["Photos", "Music", "Cute copy", "Memory sections", "Private link"],
-    priceLabel: "From ₹1,499",
     packageId: "premium",
     previewImage: "/images/anniversary-cute-preview.png",
     demoPath: "/anniversary-cute",
@@ -242,7 +240,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A calm, premium anniversary page with emotional pacing, photos, and a thoughtful promise section.",
     bestFor: "Best for married couples, milestone anniversaries, and premium romantic surprises.",
     included: ["Photos", "Music", "Premium story", "Promises", "Private link"],
-    priceLabel: "From ₹1,499",
     packageId: "premium",
     previewImage: "/images/anniversary-elegant-preview.png",
     demoPath: "/anniversary-elegant",
@@ -258,7 +255,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A sweet proposal page with photos, reasons, soft copy, and a reveal moment they will remember.",
     bestFor: "Best for heartfelt proposals, emotional confession pages, and soft romantic surprises.",
     included: ["Photos", "Music", "Reasons list", "Reveal section", "Private link"],
-    priceLabel: "From ₹999",
     packageId: "surprise",
     previewImage: "/images/proposal-preview.png",
     demoPath: "/proposal",
@@ -274,7 +270,6 @@ export const wowwishTemplates: WowWishTemplate[] = [
     promise: "A sweet proposal page with photos, reasons, soft copy, and a reveal moment they will remember.",
     bestFor: "Best for playful crush confessions, girlfriend/boyfriend proposals, and cute first-yes moments.",
     included: ["Photos", "Music", "Reasons list", "Reveal section", "Private link"],
-    priceLabel: "From ₹999",
     packageId: "surprise",
     previewImage: "/images/proposal-cute-preview.png",
     demoPath: "/proposal-cute",
@@ -288,6 +283,8 @@ export const wowwishTemplates: WowWishTemplate[] = [
     vibe: "Luxury",
     description: "A polished proposal letter page with premium gold styling.",
     bestFor: "Best for premium proposal letters, candlelight moments, and elegant forever promises.",
+    included: ["Photos", "Music", "Premium letter", "Reveal section", "Private link"],
+    packageId: "premium",
     previewImage: "/images/proposal-luxury-preview.png",
     demoPath: "/proposal-luxury",
   },

@@ -4,9 +4,9 @@ import { BRAND_NAME } from "@/components/site/siteConstants";
 
 export const SITE_URL = "https://wowwish.in";
 export const DEFAULT_OG_IMAGE = "/og/default.png";
-export const DEFAULT_TITLE = "WowWish — Personalized Wish Pages From ₹999";
+export const DEFAULT_TITLE = "WowWish — Personalized Wish Pages ₹499 onwards";
 export const DEFAULT_DESCRIPTION =
-  "Personalized wish pages with photos, music, and a private link. From ₹999.";
+  "Personalized wish pages with photos, music, and a private link. ₹499 onwards.";
 
 type PageMetadataInput = {
   title: string;

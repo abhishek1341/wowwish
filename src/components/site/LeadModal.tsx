@@ -76,7 +76,7 @@ export default function LeadModal({
     personName ? `Person's name: ${personName}` : "",
     date ? `Date: ${date}` : "",
     tone ? `Tone: ${tone}` : "",
-    `Package: ${pkg === "basic" ? "₹499 Basic" : "₹799 Premium"}`,
+    `Package: ${pkg === "basic" ? "₹499 Basic" : "₹999 Premium"}`,
     whatsappNumber ? `My WhatsApp: ${whatsappNumber}` : "",
     "Photos: I will send on WhatsApp",
   ]
@@ -305,7 +305,7 @@ export default function LeadModal({
                             : "border-slate-900/10 bg-white/70 text-slate-900 hover:bg-white",
                         )}
                       >
-                        ₹799 Premium
+                        ₹999 Premium
                       </button>
                     </div>
                   </fieldset>

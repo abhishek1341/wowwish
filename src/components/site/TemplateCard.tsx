@@ -5,7 +5,7 @@ import { ExternalLink } from "lucide-react";
 
 import type { Template } from "@/lib/templates";
 import { trackEvent } from "@/lib/analytics";
-import { TEMPLATE_LAUNCH_PRICE_INR, formatInr } from "@/components/site/siteConstants";
+import { CategoryPriceOnwards } from "@/components/site/PriceOnwards";
 import PhoneMockup from "@/components/site/PhoneMockup";
 
 function cn(...classes: Array<string | false | undefined | null>) {
@@ -139,7 +139,7 @@ export default function TemplateCard({
           )}
 
           <div className="shrink-0 whitespace-nowrap rounded-full border border-slate-900/10 bg-white/85 px-3 py-1 text-[11px] font-semibold text-slate-900 shadow-sm backdrop-blur">
-            {formatInr(TEMPLATE_LAUNCH_PRICE_INR)} onwards
+            <CategoryPriceOnwards category={template.category} />
           </div>
         </div>
 

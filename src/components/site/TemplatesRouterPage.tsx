@@ -6,12 +6,8 @@ import { ArrowLeft, ArrowRight, ExternalLink, MessageCircle } from "lucide-react
 
 import type { TemplateCategoryId } from "@/lib/templates";
 import { CATEGORY_LABELS, getTemplateBySlug, getTemplatesByCategory } from "@/lib/templates";
-import {
-  TEMPLATE_LAUNCH_PRICE_INR,
-  TEMPLATE_OLD_PRICE_INR,
-  buildWhatsappLink,
-  formatInr,
-} from "@/components/site/siteConstants";
+import { buildWhatsappLink } from "@/components/site/siteConstants";
+import { CategoryPriceOnwards } from "@/components/site/PriceOnwards";
 import MarketingShell from "@/components/site/MarketingShell";
 import { useLeadModal } from "@/components/site/leadModalContext";
 import PhoneMockup from "@/components/site/PhoneMockup";
@@ -81,7 +77,7 @@ function CategoryCard({ category }: { category: TemplateCategoryId }) {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-400" />
-              Starting from {formatInr(TEMPLATE_LAUNCH_PRICE_INR)}
+              <CategoryPriceOnwards category={category} />
             </div>
             <div className="mt-4 text-xs font-semibold tracking-[0.22em] text-slate-700/60">CATEGORY</div>
             <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
@@ -253,11 +249,13 @@ function TemplateDetail({ templateSlug }: { templateSlug: string }) {
 
           <div className="mt-6 rounded-3xl border border-slate-900/10 bg-slate-950 p-6 shadow-[0_22px_90px_rgba(15,23,42,0.20)]">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-white">Starting from</div>
-              <div className="text-right">
-                <div className="text-xs font-semibold text-white/60 line-through">{formatInr(TEMPLATE_OLD_PRICE_INR)}</div>
-                <div className="text-lg font-semibold text-white">{formatInr(TEMPLATE_LAUNCH_PRICE_INR)}</div>
-              </div>
+              <div className="text-sm font-semibold text-white">Starting price</div>
+              <CategoryPriceOnwards
+                category={template.category}
+                priceClassName="text-lg font-semibold text-white"
+                oldClassName="text-xs font-semibold text-white/60"
+                vertical
+              />
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <button

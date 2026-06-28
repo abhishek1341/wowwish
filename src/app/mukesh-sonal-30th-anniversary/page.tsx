@@ -1902,7 +1902,7 @@ const MukeshSonal30thAnniversaryPage = () => {
         </div>
       </Section>
 
-      <DemoStickyCTA occasion="Anniversary" templateName="Premium Memory Story" packageId="premium" priceText="From ₹1,499" recipientName="Mukesh & Sonal" demoUrl="/mukesh-sonal-30th-anniversary" />
+      <DemoStickyCTA occasion="Anniversary" templateName="Premium Memory Story" packageId="premium" priceText="₹999 onwards" recipientName="Mukesh & Sonal" demoUrl="/mukesh-sonal-30th-anniversary" />
       <footer className="px-4 pb-10 sm:px-6">
         <div className="mx-auto max-w-6xl border-t border-slate-900/10 pt-8 text-center">
           <div className="text-xs font-semibold text-slate-700/75">{pageData.footer}</div>

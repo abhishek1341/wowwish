@@ -26,6 +26,8 @@ import {
   SITE_CONTAINER,
   TEMPLATE_LAUNCH_PRICE_INR,
   TEMPLATE_OLD_PRICE_INR,
+  TEMPLATE_PREMIUM_LAUNCH_PRICE_INR,
+  TEMPLATE_PREMIUM_OLD_PRICE_INR,
   buildWhatsappLink,
   formatInr,
 } from "@/components/site/siteConstants";
@@ -331,7 +333,7 @@ function HomeContent() {
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-semibold text-slate-600 line-through">{formatInr(TEMPLATE_OLD_PRICE_INR)}</div>
-                  <div className="text-2xl font-semibold tracking-tight text-slate-950">{formatInr(TEMPLATE_LAUNCH_PRICE_INR)}</div>
+                  <div className="text-2xl font-semibold tracking-tight text-slate-950">{formatInr(TEMPLATE_LAUNCH_PRICE_INR)} onwards</div>
                 </div>
               </div>
               <div className="mt-4 space-y-2 text-sm font-semibold text-slate-800">
@@ -384,8 +386,8 @@ function HomeContent() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-semibold text-[#FFF8EA]/70 line-through">{formatInr(1099)}</div>
-                    <div className="text-2xl font-semibold tracking-tight text-[#FFF8EA]">{formatInr(799)}</div>
+                    <div className="text-xs font-semibold text-[#FFF8EA]/70 line-through">{formatInr(TEMPLATE_PREMIUM_OLD_PRICE_INR)}</div>
+                    <div className="text-2xl font-semibold tracking-tight text-[#FFF8EA]">{formatInr(TEMPLATE_PREMIUM_LAUNCH_PRICE_INR)} onwards</div>
                   </div>
                 </div>
 

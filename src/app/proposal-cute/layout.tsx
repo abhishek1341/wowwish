@@ -4,7 +4,7 @@ import { createPageMetadata, OG_IMAGES } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({
   title: "Cute Proposal Wish Pages | WowWish",
-  description: "Playful proposal pages with photos, music, cute reasons, and a private reveal link. From ₹999.",
+  description: "Playful proposal pages with photos, music, cute reasons, and a private reveal link. ₹999 onwards.",
   path: "/proposal-cute",
   ogImage: OG_IMAGES.proposalCute,
 });

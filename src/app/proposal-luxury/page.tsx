@@ -1229,7 +1229,7 @@ export default function ProposalLuxuryPage() {
         </div>
       </SectionShell>
 
-      <DemoStickyCTA occasion="Proposal" templateName="Proposal Luxury Letter" packageId="premium" priceText="From ₹1,499" recipientName={templateData.partnerName} demoUrl="/proposal-luxury" />
+      <DemoStickyCTA occasion="Proposal" templateName="Proposal Luxury Letter" packageId="premium" priceText="₹999 onwards" recipientName={templateData.partnerName} demoUrl="/proposal-luxury" />
       <div className="h-24" />
       <footer className="px-4 pb-10 sm:px-6">
         <div className="mx-auto max-w-5xl border-t border-white/10 pt-8 text-center">
